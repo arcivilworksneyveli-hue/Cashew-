@@ -1,0 +1,237 @@
+// AR Cashew Sale App — single-file React component (Tailwind CSS)
+// Save this file as src/App.jsx in a React + Tailwind project.
+// PLACEHOLDERS:
+// - Put your AR logo at public/ar-logo.png or change the path below.
+// - This is a frontend-only prototype with local state (no backend).
+
+import React, { useState } from "react";
+
+const PRODUCTS = [
+  { id: 1, name: "W320 Cashew (500g)", price: 750, tag: "W320", desc: "Whole premium cashews", img: null },
+  { id: 2, name: "W240 Cashew (500g)", price: 1200, tag: "W240", desc: "Large whole cashew", img: null },
+  { id: 3, name: "Broken Cashew (500g)", price: 420, tag: "Broken", desc: "Great for cooking & snacks", img: null },
+  { id: 4, name: "Kernels (250g)", price: 650, tag: "Kernels", desc: "Select quality kernels", img: null }
+];
+
+export default function App() {
+  const [page, setPage] = useState("home");
+  const [cart, setCart] = useState([]);
+  const [showCheckout, setShowCheckout] = useState(false);
+
+  function addToCart(product) {
+    setCart(prev => {
+      const found = prev.find(p => p.id === product.id);
+      if (found) return prev.map(p => p.id === product.id ? { ...p, qty: p.qty + 1 } : p);
+      return [...prev, { ...product, qty: 1 }];
+    });
+  }
+
+  function changeQty(id, delta) {
+    setCart(prev => prev
+      .map(p => p.id === id ? { ...p, qty: Math.max(1, p.qty + delta) } : p)
+      .filter(p => p.qty > 0)
+    );
+  }
+
+  function removeItem(id) {
+    setCart(prev => prev.filter(p => p.id !== id));
+  }
+
+  const total = cart.reduce((s, p) => s + p.price * p.qty, 0);
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-800">
+      {/* Top banner */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <img src="/ar-logo.png" alt="AR logo" className="h-12 w-12 object-contain" />
+            <div>
+              <h1 className="text-xl font-semibold">AR Cashews</h1>
+              <p className="text-sm text-gray-500">Pure & Premium Cashews, Freshly Packed</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setPage('home')} className={`px-3 py-2 rounded ${page==='home' ? 'bg-yellow-100':'hover:bg-gray-100'}`}>Home</button>
+            <button onClick={() => setPage('products')} className={`px-3 py-2 rounded ${page==='products' ? 'bg-yellow-100':'hover:bg-gray-100'}`}>Products</button>
+            <button onClick={() => setPage('profile')} className={`px-3 py-2 rounded ${page==='profile' ? 'bg-yellow-100':'hover:bg-gray-100'}`}>Profile</button>
+            <button onClick={() => setShowCheckout(true)} className="relative px-3 py-2 rounded bg-green-600 text-white">
+              Cart <span className="ml-2 inline-block bg-white text-green-600 rounded-full px-2 text-xs font-semibold">{cart.length}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero / Banner Page (Home) */}
+      {page === 'home' && (
+        <main className="max-w-4xl mx-auto px-4 py-10">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div>
+              <h2 className="text-3xl font-bold">Welcome to AR Cashews</h2>
+              <p className="mt-3 text-gray-600">Fresh from the farm, sorted and packed with care. Shop high-quality cashews in convenient packs.</p>
+
+              <div className="mt-6 flex gap-3">
+                <button onClick={() => setPage('products')} className="px-5 py-3 rounded-lg bg-yellow-500 text-white font-semibold shadow">Shop Now</button>
+                <a href="#contact" className="px-5 py-3 rounded-lg border border-gray-200">Contact Us</a>
+              </div>
+
+              <div className="mt-8 grid grid-cols-3 gap-3">
+                <FeatureBullet title="Farm Fresh" desc="Direct farm sourcing" />
+                <FeatureBullet title="Premium Grade" desc="W240 / W320 options" />
+                <FeatureBullet title="Fast Delivery" desc="Doorstep shipping" />
+              </div>
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-lg bg-white">
+              {/* Replace with a good product hero image */}
+              <div className="h-64 flex items-center justify-center bg-[url('/hero-cashew.jpg')] bg-cover bg-center">
+                <div className="bg-black/30 p-4 rounded">
+                  <p className="text-white font-semibold">Handpicked Cashews</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Quick products row */}
+          <section className="mt-10">
+            <h3 className="text-xl font-semibold">Featured Products</h3>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {PRODUCTS.map(p => (
+                <div key={p.id} className="bg-white rounded-lg p-4 shadow-sm flex flex-col">
+                  <div className="h-28 bg-gray-100 rounded-md mb-3 flex items-center justify-center">Image</div>
+                  <h4 className="font-semibold">{p.name}</h4>
+                  <p className="text-sm text-gray-500">{p.desc}</p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-bold">₹{p.price}</div>
+                      <div className="text-xs text-gray-400">{p.tag}</div>
+                    </div>
+                    <button onClick={() => addToCart(p)} className="px-3 py-2 rounded bg-yellow-500 text-white">Add</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+      )}
+
+      {/* Products page */}
+      {page === 'products' && (
+        <main className="max-w-4xl mx-auto px-4 py-10">
+          <h2 className="text-2xl font-bold">All Products</h2>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {PRODUCTS.map(p => (
+              <div key={p.id} className="bg-white rounded-lg p-4 shadow-sm flex flex-col">
+                <div className="h-32 bg-gray-100 rounded-md mb-3 flex items-center justify-center">Image</div>
+                <h4 className="font-semibold">{p.name}</h4>
+                <p className="text-sm text-gray-500">{p.desc}</p>
+                <div className="mt-auto flex items-center justify-between">
+                  <div>
+                    <div className="text-lg font-bold">₹{p.price}</div>
+                    <div className="text-xs text-gray-400">{p.tag}</div>
+                  </div>
+                  <button onClick={() => addToCart(p)} className="px-3 py-2 rounded bg-yellow-500 text-white">Add to Cart</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      )}
+
+      {/* Profile page */}
+      {page === 'profile' && (
+        <main className="max-w-4xl mx-auto px-4 py-10">
+          <h2 className="text-2xl font-bold">Profile</h2>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-4 rounded shadow">
+              <h3 className="font-semibold">Account</h3>
+              <p className="text-sm text-gray-500 mt-2">Name: AR Cashew Customer</p>
+              <p className="text-sm text-gray-500">Phone: +91 98765 43210</p>
+            </div>
+            <div className="bg-white p-4 rounded shadow">
+              <h3 className="font-semibold">Orders</h3>
+              <p className="text-sm text-gray-500 mt-2">You have no past orders.</p>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* Checkout / Cart drawer */}
+      {showCheckout && (
+        <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center">
+          <div className="w-full md:w-3/5 bg-white rounded-t-lg md:rounded-lg p-6 max-h-[90vh] overflow-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Your Cart</h3>
+              <div className="flex items-center gap-2">
+                <div className="text-lg font-bold">₹{total}</div>
+                <button onClick={() => setShowCheckout(false)} className="px-3 py-1 rounded bg-gray-100">Close</button>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              {cart.length === 0 ? (
+                <div className="text-gray-500">Cart is empty. Add some cashews!</div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                    <div>
+                      <div className="font-semibold">{item.name}</div>
+                      <div className="text-sm text-gray-500">₹{item.price} x {item.qty}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => changeQty(item.id, -1)} className="px-2 py-1 rounded border">-</button>
+                      <div className="px-3">{item.qty}</div>
+                      <button onClick={() => changeQty(item.id, +1)} className="px-2 py-1 rounded border">+</button>
+                      <button onClick={() => removeItem(item.id)} className="ml-3 text-sm text-red-600">Remove</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="mt-6 flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-500">Subtotal</div>
+                <div className="text-2xl font-bold">₹{total}</div>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => { setCart([]); setShowCheckout(false); alert('Order placed — demo only'); }} className="px-4 py-2 rounded bg-green-600 text-white">Place Order</button>
+                <button onClick={() => { setShowCheckout(false); }} className="px-4 py-2 rounded border">Continue Shopping</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Footer / Contact */}
+      <footer id="contact" className="mt-16 bg-white border-t">
+        <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col md:flex-row items-start justify-between">
+          <div>
+            <h4 className="font-semibold">AR Cashews</h4>
+            <p className="text-sm text-gray-500 mt-2">4 Selvi Amman Kovil Street, Vadalur, Cuddalore</p>
+            <p className="text-sm text-gray-500">Phone: +91 87542 34338</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <h5 className="font-semibold">Support</h5>
+            <div className="flex gap-3 mt-2">
+              <a href="tel:+918754234338" className="px-3 py-2 rounded border">Call</a>
+              <a href="https://wa.me/918754234338" className="px-3 py-2 rounded border">WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function FeatureBullet({ title, desc }) {
+  return (
+    <div className="bg-white p-3 rounded shadow-sm flex items-start gap-3">
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <div>
+        <div className="font-semibold text-sm">{title}</div>
+        <div className="text-xs text-gray-500">{desc}</div>
+      </div>
+    </div>
+  );
+}
